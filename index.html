@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🛡️ Cipher Vault: Vigenère + Transposition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --secondary: #ffffff;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #333333;
+      --radius: 8px;
+      --transition: 0.3s ease;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      max-width: 480px;
+      width: 100%;
+      box-sizing: border-box;
+      transition: transform var(--transition);
+    }
+    .container:hover {
+      transform: translateY(-4px);
+    }
+    h1 {
+      margin: 0 0 1rem;
+      text-align: center;
+      color: var(--primary);
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 1rem;
+    }
+    .field label {
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+    .field textarea,
+    .field input {
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      resize: vertical;
+      transition: border var(--transition);
+    }
+    .field textarea:focus,
+    .field input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .buttons button {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: var(--secondary);
+      transition: background var(--transition);
+    }
+    .buttons button:hover {
+      background: #357ABD;
+    }
+    .output {
+      margin-top: 1.5rem;
+      background: var(--bg);
+      padding: 1rem;
+      border-radius: var(--radius);
+      min-height: 4rem;
+      white-space: pre-wrap;
+      font-family: monospace;
+      word-wrap: break-word;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    @media (max-width: 500px) {
+      .buttons {
+        flex-direction: column;
+      }
+      .buttons button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>🛡️ Cipher Vault</h1>
+    <div class="field">
+      <label for="text">Text</label>
+      <textarea id="text" rows="4" placeholder="Enter plaintext or ciphertext..."></textarea>
+    </div>
+    <div class="field">
+      <label for="keyword">Keyword</label>
+      <input type="text" id="keyword" placeholder="e.g., KEY" />
+    </div>
+    <div class="buttons">
+      <button onclick="handleCipher(true)">Encrypt</button>
+      <button onclick="handleCipher(false)">Decrypt</button>
+    </div>
+    <div class="output" id="result">🔒 Results appear here...</div>
+  </div>
+
+  <script>
+    function vigenereEncrypt(text, keyword) {
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+      let key = keyword.repeat(Math.ceil(text.length / keyword.length)).slice(0, text.length);
+      return [...text].map((ch,i) =>
+        String.fromCharCode((ch.charCodeAt(0)-65 + key.charCodeAt(i)-65) %26 + 65)
+      ).join('');
+    }
+    function vigenereDecrypt(text, keyword) {
+      text = text.toUpperCase().replace(/[^A-Z]/g, '');
+      keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
+      let key = keyword.repeat(Math.ceil(text.length / keyword.length)).slice(0, text.length);
+      return [...text].map((ch,i) =>
+        String.fromCharCode((ch.charCodeAt(0)-65 - (key.charCodeAt(i)-65) +26) %26 + 65)
+      ).join('');
+    }
+    function transposeEncrypt(text, c) {
+      let out='';
+      for (let i=0; i<c; i++)
+        for (let j=i; j<text.length; j+=c)
+          out += text[j];
+      return out;
+    }
+    function transposeDecrypt(text, c) {
+      const n = text.length;
+      let res = Array(n), idx = 0;
+      for (let i = 0; i < c; i++)
+        for (let j = i; j < n; j += c)
+          res[j] = text[idx++];
+      return res.join('');
+    }
+
+    function handleCipher(isEncrypt) {
+      const txt = document.getElementById('text').value;
+      const key = document.getElementById('keyword').value;
+      if (!txt.trim() || !key.trim()) {
+        alert('Please enter both text and keyword!');
+        return;
+      }
+      const vig = isEncrypt ? vigenereEncrypt(txt, key) : vigenereDecrypt(txt, key);
+      const result = isEncrypt
+        ? transposeEncrypt(vig, key.length)
+        : vigenereDecrypt(transposeDecrypt(txt.toUpperCase().replace(/[^A-Z]/g,''), key.length), key);
+      document.getElementById('result').textContent =
+        (isEncrypt ? 'Encrypted:\n' : 'Decrypted:\n') + result;
+    }
+  </script>
+
+</body>
+</html>
