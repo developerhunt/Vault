@@ -1,131 +1,297 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-  <meta charset="UTF-8">
-  <title>🛡️ Cipher Vault: Vigenère + Transposition</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>🛡️ Cipher Vault: Hacker RGB UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root {
-      --primary: #4a90e2;
-      --secondary: #ffffff;
-      --bg: #f0f4f8;
-      --card: #ffffff;
-      --text: #333333;
-      --radius: 8px;
-      --transition: 0.3s ease;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      font-family: 'Segoe UI', Tahoma, sans-serif;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      background: var(--card);
-      padding: 2rem;
-      border-radius: var(--radius);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-      max-width: 480px;
-      width: 100%;
+    /* === Reset & base === */
+    * {
       box-sizing: border-box;
-      transition: transform var(--transition);
+      margin: 0; padding: 0;
     }
-    .container:hover {
-      transform: translateY(-4px);
+    body, html {
+      height: 100%;
+      background: #000;
+      font-family: 'Courier New', Courier, monospace;
+      overflow: hidden;
+      color: #00ff00;
+      user-select: none;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      cursor: default;
     }
+
+    /* === Matrix code rain background === */
+    #matrixCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0;
+      background: black;
+    }
+
+    /* === Container for UI === */
+    .container {
+      position: relative;
+      z-index: 10;
+      max-width: 480px;
+      margin: 5vh auto;
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid;
+      border-image-slice: 1;
+      border-width: 3px;
+      border-image-source: linear-gradient(
+        270deg,
+        #00ffea,
+        #ff00ff,
+        #ff0000,
+        #00ffea
+      );
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow:
+        0 0 10px #00ffea,
+        0 0 30px #ff00ff,
+        0 0 60px #ff0000;
+      animation: borderGlow 6s linear infinite;
+      color: #00ff00;
+      text-shadow:
+        0 0 5px #00ff00,
+        0 0 15px #00ff00,
+        0 0 30px #00ff00;
+      user-select: text;
+    }
+
+    @keyframes borderGlow {
+      0% {
+        border-image-source: linear-gradient(270deg, #00ffea, #ff00ff, #ff0000, #00ffea);
+      }
+      50% {
+        border-image-source: linear-gradient(270deg, #ff00ff, #ff0000, #00ffea, #ff00ff);
+      }
+      100% {
+        border-image-source: linear-gradient(270deg, #00ffea, #ff00ff, #ff0000, #00ffea);
+      }
+    }
+
+    /* === Heading with RGB cycle glow === */
     h1 {
-      margin: 0 0 1rem;
+      font-size: 2.5rem;
       text-align: center;
-      color: var(--primary);
+      margin-bottom: 1rem;
+      color: #00ff00;
+      animation: rgbCycle 6s linear infinite;
+      text-shadow:
+        0 0 10px #00ff00,
+        0 0 20px #00ff00,
+        0 0 30px #00ff00;
+      user-select: none;
     }
+
+    @keyframes rgbCycle {
+      0% {
+        color: #00ff00;
+        text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+      }
+      33% {
+        color: #ff00ff;
+        text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+      }
+      66% {
+        color: #00ffff;
+        text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+      }
+      100% {
+        color: #00ff00;
+        text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+      }
+    }
+
+    /* === Fields styling === */
     .field {
       display: flex;
       flex-direction: column;
       margin-bottom: 1rem;
     }
-    .field label {
+    label {
       font-weight: bold;
       margin-bottom: 0.3rem;
+      color: #00ff00;
+      user-select: none;
+      text-shadow: 0 0 10px #00ff00;
     }
-    .field textarea,
-    .field input {
+    textarea, input {
+      background: #000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
       padding: 0.75rem;
       font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: var(--radius);
+      font-family: 'Courier New', Courier, monospace;
+      border-radius: 6px;
       resize: vertical;
-      transition: border var(--transition);
+      box-shadow:
+        inset 0 0 5px #00ff00,
+        0 0 10px #00ff00;
+      transition: border-color 0.3s ease;
+      caret-color: #ff00ff;
     }
-    .field textarea:focus,
-    .field input:focus {
+    textarea:focus, input:focus {
       outline: none;
-      border-color: var(--primary);
+      border-color: #ff00ff;
+      box-shadow:
+        inset 0 0 8px #ff00ff,
+        0 0 20px #ff00ff;
+      animation: flicker 1.5s infinite alternate;
     }
+
+    /* Flicker/glitch animation */
+    @keyframes flicker {
+      0% { opacity: 1; }
+      50% { opacity: 0.6; }
+      100% { opacity: 1; }
+    }
+
+    /* === Buttons with neon glow and RGB animation === */
     .buttons {
       display: flex;
       gap: 1rem;
       margin-top: 0.5rem;
     }
-    .buttons button {
+    button {
       flex: 1;
       padding: 0.75rem;
       font-size: 1rem;
-      cursor: pointer;
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: bold;
+      color: #000;
+      background: #00ff00;
       border: none;
-      border-radius: var(--radius);
-      background: var(--primary);
-      color: var(--secondary);
-      transition: background var(--transition);
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow:
+        0 0 10px #00ff00,
+        0 0 20px #00ff00;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      user-select: none;
+      animation: rgbCycle 6s linear infinite;
+      text-shadow: 0 0 5px #000;
     }
-    .buttons button:hover {
-      background: #357ABD;
+    button:hover {
+      background: #ff00ff;
+      box-shadow:
+        0 0 15px #ff00ff,
+        0 0 30px #ff00ff;
+      color: #fff;
+      text-shadow: 0 0 10px #fff;
+      animation: none;
     }
+
+    /* === Output box with glitch effect === */
     .output {
       margin-top: 1.5rem;
-      background: var(--bg);
+      background: #000;
       padding: 1rem;
-      border-radius: var(--radius);
-      min-height: 4rem;
+      border-radius: 6px;
+      min-height: 6rem;
       white-space: pre-wrap;
-      font-family: monospace;
+      font-family: 'Courier New', Courier, monospace;
       word-wrap: break-word;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+      box-shadow:
+        inset 0 0 10px #00ff00;
+      color: #00ff00;
+      position: relative;
+      overflow: hidden;
+      animation: flicker 2s infinite alternate;
     }
+
+    /* Blinking cursor */
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 20px;
+      background: #00ff00;
+      margin-left: 4px;
+      animation: blink 1s steps(2, start) infinite;
+      vertical-align: bottom;
+      border-radius: 2px;
+      box-shadow:
+        0 0 8px #00ff00;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      50.1%, 100% { opacity: 0; }
+    }
+
+    /* Responsive */
     @media (max-width: 500px) {
       .buttons {
         flex-direction: column;
       }
-      .buttons button {
+      button {
         width: 100%;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Matrix code rain canvas -->
+  <canvas id="matrixCanvas"></canvas>
 
-  <div class="container">
+  <div class="container" role="main" aria-label="Cipher Vault Hacker UI">
     <h1>🛡️ Cipher Vault</h1>
     <div class="field">
       <label for="text">Text</label>
-      <textarea id="text" rows="4" placeholder="Enter plaintext or ciphertext..."></textarea>
+      <textarea id="text" rows="4" placeholder="Enter plaintext or ciphertext..." spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"></textarea>
     </div>
     <div class="field">
       <label for="keyword">Keyword</label>
-      <input type="text" id="keyword" placeholder="e.g., KEY" />
+      <input type="text" id="keyword" placeholder="e.g., KEY" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"/>
     </div>
     <div class="buttons">
-      <button onclick="handleCipher(true)">Encrypt</button>
-      <button onclick="handleCipher(false)">Decrypt</button>
+      <button id="encryptBtn" aria-label="Encrypt Text">Encrypt</button>
+      <button id="decryptBtn" aria-label="Decrypt Text">Decrypt</button>
     </div>
-    <div class="output" id="result">🔒 Results appear here...</div>
+    <div class="output" id="result" aria-live="polite" aria-atomic="true">
+      🔒 Results appear here...<span class="cursor"></span>
+    </div>
   </div>
 
   <script>
+    // Matrix rain effect
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = window.innerWidth;
+    let height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()-_=+<>?/|~'.split('');
+    const fontSize = 16;
+    const columns = Math.floor(width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.fillStyle = '#00ff00';
+      ctx.font = fontSize + 'px Courier New';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 40);
+
+    // Cipher algorithms from before (improved)
     function vigenereEncrypt(text, keyword) {
       text = text.toUpperCase().replace(/[^A-Z]/g, '');
       keyword = keyword.toUpperCase().replace(/[^A-Z]/g, '');
@@ -158,6 +324,7 @@
       return res.join('');
     }
 
+    // Enhanced handleCipher - double encrypt: vig + transposition; decrypt reverses in correct order
     function handleCipher(isEncrypt) {
       const txt = document.getElementById('text').value;
       const key = document.getElementById('keyword').value;
@@ -165,14 +332,43 @@
         alert('Please enter both text and keyword!');
         return;
       }
-      const vig = isEncrypt ? vigenereEncrypt(txt, key) : vigenereDecrypt(txt, key);
-      const result = isEncrypt
-        ? transposeEncrypt(vig, key.length)
-        : vigenereDecrypt(transposeDecrypt(txt.toUpperCase().replace(/[^A-Z]/g,''), key.length), key);
-      document.getElementById('result').textContent =
-        (isEncrypt ? 'Encrypted:\n' : 'Decrypted:\n') + result;
+      if (key.length < 2) {
+        alert('Keyword must be at least 2 characters!');
+        return;
+      }
+      if (isEncrypt) {
+        // Vigenere encrypt first, then transpose
+        const vig = vigenereEncrypt(txt, key);
+        const result = transposeEncrypt(vig, key.length);
+        displayResult('Encrypted:\n' + result);
+      } else {
+        // Decrypt: transpose decrypt first, then Vigenere decrypt
+        const trans = transposeDecrypt(txt.toUpperCase().replace(/[^A-Z]/g,''), key.length);
+        const result = vigenereDecrypt(trans, key);
+        displayResult('Decrypted:\n' + result);
+      }
     }
-  </script>
 
+    function displayResult(text) {
+      const resElem = document.getElementById('result');
+      resElem.textContent = text;
+      // Append blinking cursor
+      const cursor = document.createElement('span');
+      cursor.classList.add('cursor');
+      resElem.appendChild(cursor);
+    }
+
+    // Bind buttons
+    document.getElementById('encryptBtn').onclick = () => handleCipher(true);
+    document.getElementById('decryptBtn').onclick = () => handleCipher(false);
+
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    });
+  </script>
 </body>
 </html>
